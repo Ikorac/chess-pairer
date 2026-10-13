@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<!-- Credit to Leo AI for laying groundwork because I was really busy 
+I did a lot of editing, removing, and adding though.
+Still, I don't think it deserves a vote.-->
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ikorac's Chess Pairer</title>
+    <style>
+        body { 
+            background: rgba(0, 0, 0); 
+            background-image: url(https://www.wipo.int/documents/d/ip-advantage/images-chess-player-960.webp);
+            background-size: cover;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-position: center;
+            color: #e8ecf1; 
+            font-family: sans-serif; 
+            margin: 20px; 
+            padding: 10px; 
+        }
+        a {
+          text-decoration: none;
+          color: rgba(0, 0, 0);
+        }
+        a:hover {
+        	display: none;
+        }
+        a:visited {
+        	color: rgba(0, 0, 0);
+        }
+        h1 { 
+            font-size: 25px; 
+            margin: 0 0 5px; 
+        }
+        .sub { 
+            color: rgba(255, 255, 255); 
+            font-size: 13px; 
+            margin: 0 0 18px; 
+            
+        }
+        .bar {
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px;
+            align-items: center; 
+            margin-bottom: 16px;
+        }
+        button { 
+            font: inherit; 
+            border: 2px solid rgba(255, 255, 255); 
+            background: rgba(0, 0, 0); 
+            color: rgba(255, 255, 255);
+            padding: 8px 4px; 
+            border-radius: 19px; 
+            cursor: pointer;
+        }
+        button:hover { 
+            border-color: rgba(89, 0, 255);
+            
+        }
+        .primary { 
+            background: rgba(255, 255, 255);
+            color: rgba(0, 0, 0); 
+            font-weight: bold;
+        }
+        .ghost { 
+            background: transparent;
+        }
+        .round { 
+            color: rgba(255, 255, 255); 
+            font-weight: bold; 
+            font-size: 20px;
+        }
+        .grid {
+            display: flex; 
+            flex-wrap: wrap;
+            gap: 26px; 
+        }
+        .card { 
+            /* I took these colors from chess.com */
+            background: #81b64c;
+            border: 5px solid rgba(255, 255, 255); 
+            border-radius: 5px;
+            overflow: hidden;
+            flex: 1 1 50rem;
+        }
+        .card h2 {
+            font-size: 21px; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px; 
+            color: rgba(0, 0, 0);
+            margin: 0; 
+            padding: 12px 14px;
+            border-bottom: 2px solid rgba(255, 255, 255); 
+            background: #8abd52;
+            text-align: center;
+        }
+        .card td {
+            color: rgba(0, 0, 0);
+        }
+        table {
+            width: 100%; 
+            border-collapse: collapse;
+        }
+        th, td { 
+            padding: 8px 10px; 
+            text-align: left;
+            border-bottom: 3px solid rgba(0, 0, 0);
+        }
+        th { 
+            font-size: 21px; 
+            text-transform: uppercase; 
+            color: rgba(0, 0, 0);
+        }
+        .num { 
+            text-align: right; 
+        }
+        .pts { 
+            font-weight: bold; 
+            color: rgba(0, 0, 0); 
+            font-size: 19px;
+        }
+        .rank { 
+            color: rgba(0, 0, 0);
+            width: 19px;
+        }
+        .by { 
+            color: rgba(255, 0, 0); 
+            font-style: italic; 
+        }
+        .empty { 
+            padding: 24px 14px; 
+            color: rgba(0, 0, 0); 
+            text-align: center; 
+            font-size: 13px;
+        }
+        .status { 
+            margin-top: 14px; 
+            font-size: 15px; 
+            color: rgba(0, 0, 0);
+            min-height: 18px;
+            
+        }
+        .del { 
+            background: none; 
+            border: none; 
+            color: rgba(255, 0, 0); 
+            padding: 5px 6px;
+        }
+        .del:hover { 
+            color: rgba(255, 0, 115); 
+        }
+        .chip { 
+            font-size: 11px;
+            padding: 2px 7px; 
+            border-radius: 10px; 
+            background: rgba(255, 255, 255); 
+            color: rgba(0, 0, 0);
+        }
+        .overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,.6);
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 50; 
+            
+        }
+        .overlay.show { 
+            display: flex;
+            }
+        .dialog { 
+            background: rgba(0, 0, 0); 
+            border: 2px solid rgba(255, 255, 255); 
+            border-radius: 4px;
+            padding: 20px; 
+            width: 420px; 
+            max-width: 50rem;
+        }
+        .dialog p { 
+            margin: 0 0 14px; 
+            font-size: 24px;
+        }
+        .dialog input { 
+            width: 100%; 
+            box-sizing: border-box; 
+            font: inherit; 
+            padding: 9px 11px;
+            border-radius: 8px; 
+            border: 2px solid rgba(255, 255, 255); 
+            background: rgba(0, 0, 0); 
+            color: rgba(255, 255, 255); 
+        }
+        .dbtns { 
+            display: flex; 
+            gap: 8px; 
+            justify-content: flex-end; 
+            margin-top: 16px; 
+        }
+        .liquid-glass, section, header, footer {
+        	padding: 25px;
+            border-radius:24px;
+            color: white;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 1);
+            background:rgba(255, 255, 255, 0.05);
+            
+            /* note to self: see what this actually does*/
+            box-shadow: 
+                0 4px 30px rgba(255, 255, 255, 0.2), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.4),
+                inset 0 10px 20px rgba(255, 255, 255, 0.1);
+                
+            backdrop-filter:blur(1px) url(#liquid-refraction);
+            transform: translateZ(5); 
+        }
+    </style>
+</head>
+    <body>
+    <svg style="position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg">
+        <filter id="liquid-refraction">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
+        
+        <section class ="liquid-glass">
+        <h1>Chess Pairing Board</h1>
+        
+        <div class="bar">
+            <button id="addBtn">&#65291; Add more players</button>
+            <button id="calcBtn" class="primary"><a href="#pairings-link">Calculate</a></button>
+            <button id="resetBtn" class="ghost">Reset points</button>
+            <button id="clearBtn" class="ghost">Clear all</button>
+            <span class="spacer"></span>
+            <span class="round" id="roundLbl">Round 1</span>
+            <button id="sortBtn" class="ghost">Sort: Score</button>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>Standings &amp; scoring</h2>
+                <div id="standings">
+                </div>
+            </div>
+            
+            <div class="card" id="pairings-link">
+                <h2>Pairings</h2>
+                <div id="pairings"></div>
+                    
+            </div>
+        </div>
+        
+        <p class="status" id="status"></p>
+        
+        <div class="overlay" id="overlay">
+            <div class="dialog">
+                <p id="dlgMsg">Name?</p>
+                <input id="dlgInput" type="text" autocomplete="off">
+                <div class="dbtns">
+                    <button id="dlgCancel" class="ghost">Cancel?</button>
+                    <button id="dlgOk" class="primary">Okay, great</button>
+                </div>
+            </div>
+        </div>
+        </section>
+        <script>
+            var players = [];
+            var pairs = [];
+            var round = 0;
+            var uid = 0;
+            var sortMode = 'points';
+            
+            var overlay = document.getElementById('overlay');
+            var dlgMsg = document.getElementById('dlgMsg');
+            var dlgInput = document.getElementById('dlgInput');
+            var dlgOk = document.getElementById('dlgOk');
+            var dlgCancel = document.getElementById('dlgCancel');
+            var dlgCallback = null;
+            
+            
+            function askDialog(message, showInput, callback) {
+                dlgMsg.textContent = message;
+                dlgInput.style.display = showInput ? 'block' : 'none';
+                dlgInput.value = '';
+                dlgCallback = callback;
+                overlay.classList.add('show');
+                if (showInput) { 
+                    dlgInput.focus(); 
+                    
+                }
+            }
+            
+            function closeDialog(value) {
+                overlay.classList.remove('show');
+                var cb = dlgCallback;
+                dlgCallback = null;
+                if (cb) { 
+                    cb(value); 
+                    
+                }
+            }
+            
+            dlgOk.onclick = function () {
+                var raw = dlgInput.style.display === 'none' ? true : dlgInput.value.trim();
+                if (dlgInput.style.display !== 'none' && raw === '') {
+                    return; 
+                    
+                }
+                closeDialog(raw);
+                };
+                dlgCancel.onclick = function () { 
+                    closeDialog(null); 
+                    
+                };
+                dlgInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { 
+                    dlgOk.onclick(); 
+                    
+                }
+            });
+            
+            function findById(id) {
+                for (var i = 0; i < players.length; i++) {
+                    if (players[i].id === id) { 
+                        return players[i]; 
+                        
+                    }
+                }
+                return null;
+            }
+            
+            function fmt(n) {
+                if (n % 1 === 0) { 
+                    return String(n); 
+                    
+                }
+                return n.toFixed(1);
+            }
+            
+            function shuffle(arr) {
+                for (var i = arr.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var tmp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = tmp;
+                }
+                return arr;
+            }
+            
+            // Group by identical score, pair inside groups, carry leftovers into the
+            // next-closest score bucket so nobody faces a wildly different opponent.
+            function makePairs() {
+                var order = players.slice().sort(function (x, y) {
+                    return y.points - x.points || x.name.localeCompare(y.name);
+                });
+                var keys = [];
+                var buckets = {};
+                for (var i = 0; i < order.length; i++) {
+                    var p = order[i];
+                    var k = p.points;
+                    if (!buckets[k]) { 
+                        buckets[k] = []; keys.push(k); 
+                        
+                    }
+                    buckets[k].push(p);
+                }
+                keys.sort(function (a, b) { return b - a; });
+                
+                var leftover = [];
+                var out = [];
+                for (var ki = 0; ki < keys.length; ki++) {
+                    var pool = leftover.concat(buckets[keys[ki]]);
+                    shuffle(pool);
+                    leftover = [];
+                    for (var pi = 0; pi + 1 < pool.length; pi += 2) {
+                        out.push({ a: pool[pi].id, b: pool[pi + 1].id });
+                    }
+                    if (pool.length % 2 === 1) { 
+                        leftover.push(pool[pool.length - 1]);
+                    }
+                }
+                for (var li = 0; li < leftover.length; li++) {
+                    out.push({ a: leftover[li].id, b: null });
+                }
+                return out;
+            }
+            
+            // Chained prompts: keep asking until the player cancels.
+            function addPlayerFlow() {
+                askDialog('New player name:', true, function (name) {
+                if (name === null) {
+                    render(); 
+                    return; 
+                }
+                players.push({id: ++uid, name: name, points: 0});
+                render();
+                askDialog('Added "' + name + '". Add another?', false, function (again) {
+                    if (again) { 
+                        addPlayerFlow(); 
+                    }
+                });
+                });
+            }
+            
+            function calculate() {
+                if (players.length < 2) { 
+                    setStatus("Helllloooooo? Nobody's here."); 
+                    return; 
+                    
+                }
+                pairs = makePairs();
+                round++;
+                var byes = 0;
+                for (var i = 0; i < pairs.length; i++) { 
+                    if (pairs[i].b === null) { 
+                        byes++; 
+                        
+                    }
+                    
+                }
+                if (byes > 0) {
+                    setStatus('Round ' + round + ': ' + (pairs.length - byes) + ' pairing(s), ' + byes + ' player on a bye (+0.5 auto-awarded).');
+                } else {
+                    setStatus('Round ' + round + ': ' + pairs.length + ' pairing(s) drawn from current scores.');
+                }
+                render();
+            }
+            
+            function award(id, amount) {
+                var p = findById(id);
+                if (p) { 
+                    p.points += amount; 
+                    render(); 
+                    
+                }
+            }
+            
+            function resetPoints() {
+            if (players.length === 0) { 
+                return; 
+                
+            }
+                askDialog('Set every player back to 0 points?', false, function (yes) {
+                    if (!yes) { 
+                        return; 
+                        
+                    }
+                    for (var i = 0; i < players.length; i++) { 
+                        players[i].points = 0; 
+                        
+                    }
+                    pairs = [];
+                    round = 0;
+                    setStatus('Points reset - ready for a fresh tournament.');
+                    render();
+                });
+            }
+            
+            function clearAll() {
+            if (players.length === 0) { 
+                return; 
+                
+            }
+            askDialog('Remove all players entirely?', false, function (yes) {
+                if (!yes) { 
+                    return;
+                }
+                players = [];
+                pairs = [];
+                round = 0;
+                setStatus('Board cleared.');
+                render();
+                });
+            }
+            document.getElementById('sortBtn').onclick = function () {
+                if (sortMode === 'points') {
+                    sortMode = 'alpha';
+                    this.textContent = 'Sort: Name';
+                } else {
+                    sortMode = 'points';
+                    this.textContent = 'Sort: Score';
+                }
+                renderStandings();
+            };
+                
+            function removePlayer(id) {
+                players = players.filter(function (p) {
+                    return p.id !== id; 
+                    
+                });
+                pairs = pairs.filter(function (pr) { 
+                    return pr.a !== id && pr.b !== id; 
+                    
+                });
+                render();
+            }
+            
+            function setStatus(text) {
+                document.getElementById('status').textContent = text;
+            }
+            
+            function el(tag, cls, text) {
+                var node = document.createElement(tag);
+                if (cls) { 
+                    node.className = cls;
+                    }
+                if (text !== undefined) { 
+                    node.textContent = text; 
+                    
+                }
+                return node;
+            }
+            
+            function renderStandings() {
+                var host = document.getElementById('standings');
+                while (host.firstChild) { 
+                    host.removeChild(host.firstChild); 
+                    
+                }
+                if (players.length === 0) {
+                    host.appendChild(el('div', 'empty', 'How am I supposed to calculate nothing, genius?'));
+                return;
+            }
+            var ranked = players.slice().sort(function (a, b) {
+                if (sortMode === 'alpha') {
+                    return a.name.localeCompare(b.name);
+                }
+                return b.points - a.points || a.name.localeCompare(b.name);
+            });
+            var table = document.createElement('table');
+            var head = table.createTHead().insertRow();
+            head.appendChild(el('th', 'rank', '#'));
+            head.appendChild(el('th', '', 'Player'));
+            head.appendChild(el('th', 'num', 'Score'));
+            head.appendChild(el('th', 'num', 'Points'));
+            
+            for (var i = 0; i < ranked.length; i ++) {
+                var p = ranked[i];
+                var row = table.insertRow();
+                row.appendChild(el('td', 'rank', String(i + 1)));
+                
+                var nameCell = row.insertCell();
+                nameCell.appendChild(document.createTextNode(p.name + ' '));
+                var del = el('button', 'del mini', 'X');
+                del.title = 'remove';
+                del.playerId = p.id;
+                del.onclick = function () { 
+                    removePlayer(this.playerId);
+                };
+                nameCell.appendChild(del);
+                
+                var btnCell = row.insertCell();
+                btnCell.className = 'num';
+                var b5 = el('button', 'mini', '+0.5');
+                b5.playerId = p.id;
+                b5.onclick = function () { 
+                    award(this.playerId, 0.5); 
+                    
+                };
+                var b1 = el('button', 'mini', '+1.0');
+                b1.playerId = p.id;
+                b1.onclick = function () {
+                    award(this.playerId, 1); 
+                    
+                };
+                btnCell.appendChild(b5);
+                btnCell.appendChild(document.createTextNode(' '));
+                btnCell.appendChild(b1);
+                
+                row.appendChild(el('td', 'num pts', fmt(p.points)));
+            }
+                host.appendChild(table);
+            }
+            
+            function renderPairings() {
+                var host = document.getElementById('pairings');
+                while (host.firstChild) { 
+                    host.removeChild(host.firstChild);
+                }
+                if (pairs.length === 0) {
+                    host.appendChild(el('div', 'empty', "Calculate already... I'm bored"));
+                    return;
+                }
+                var table = document.createElement('table');
+                var head = table.createTHead().insertRow();
+                head.appendChild(el('th', 'rank', 'Brd'));
+                head.appendChild(el('th', '', 'White / Top'));
+                head.appendChild(el('th', '', ''));
+                head.appendChild(el('th', '', 'Black / Bottom'));
+                
+                for (var i = 0; i < pairs.length; i++) {
+                    var pr = pairs[i];
+                    var A = findById(pr.a);
+                    var B = pr.b === null ? null : findById(pr.b);
+                    var row = table.insertRow();
+                    row.appendChild(el('td', 'rank', String(i + 1)));
+                    row.appendChild(playerCell(A));
+                    row.appendChild(el('td', 'rank', 'vs'));
+                    row.appendChild(playerCell(B));
+                }
+                host.appendChild(table);
+            }
+            
+            function playerCell(p) {
+                var cell = document.createElement('td');
+                if (!p) {
+                    cell.className = 'by';
+                    cell.textContent = '\u2014 bye \u2014';
+                    return cell;
+                }
+                cell.appendChild(document.createTextNode(p.name + ' '));
+                cell.appendChild(el('span', 'chip', fmt(p.points)));
+                return cell;
+            }
+            
+            function render() {
+                document.getElementById('roundLbl').textContent = 'Round ' + round;
+                renderStandings();
+                renderPairings();
+            }
+            
+            document.getElementById('addBtn').onclick = addPlayerFlow;
+            document.getElementById('calcBtn').onclick = calculate;
+            document.getElementById('resetBtn').onclick = resetPoints;
+            document.getElementById('clearBtn').onclick = clearAll;
+            
+            render();
+        
+        </script>
+    </body>
+</html>
