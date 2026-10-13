@@ -83,7 +83,7 @@ Still, I don't think it deserves a vote.-->
             border: 5px solid rgba(255, 255, 255); 
             border-radius: 5px;
             overflow: hidden;
-            flex: 1 1 500rem;
+            flex: 1 1 50rem;
         }
         .card h2 {
             font-size: 21px; 
@@ -138,7 +138,8 @@ Still, I don't think it deserves a vote.-->
         .status { 
             margin-top: 14px; 
             font-size: 15px; 
-            color: rgba(0, 0, 0);
+            color: rgba(255, 255, 255);
+            text-shadow: 0 0 15px rgba(0, 0, 0, 5);
             min-height: 18px;
             
         }
@@ -421,7 +422,7 @@ Still, I don't think it deserves a vote.-->
                     
                 }
                 if (byes > 0) {
-                    setStatus('Round ' + round + ': ' + (pairs.length - byes) + ' pairing(s), ' + byes + ' player on a bye (+0.5 auto-awarded).');
+                    setStatus('Round ' + round + ': ' + (pairs.length - byes) + ' pairing(s), ' + byes + ' player on a bye (+0.5 auto-awarded). Boohooo');
                 } else {
                     setStatus('Round ' + round + ': ' + pairs.length + ' pairing(s) drawn from current scores.');
                 }
@@ -453,7 +454,7 @@ Still, I don't think it deserves a vote.-->
                     }
                     pairs = [];
                     round = 0;
-                    setStatus('Points reset - ready for a fresh tournament.');
+                    setStatus("Yes! I'm so happy");
                     render();
                 });
             }
